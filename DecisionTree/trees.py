@@ -1,6 +1,6 @@
 from math import log
 import operator
-
+import pandas as pd
 
 def createDataSet():
     """创建一个固定的数据集(也可以自定义)"""
@@ -60,7 +60,7 @@ def chooseBestFeatureToSplit(dataSet):
     选择最优的划分特征(即按哪个特征划分使得数据集的熵更小)：
         1.计算原数据集的熵
         2.计算数据集按照每一个特征划分后的新数据集的熵
-            按照某个特征划分后的新数据集的熵newEntropy += prob(特征下每个取值的概率) * calcShannonEnt(subDataSet)
+            按照某个特征划分后的新数据集的熵newEntropy += prob(划分后子集占原集比例) * calcShannonEnt(subDataSet)
         3.找到使得划分后数据集增益最大(熵最小)的特征
     """
     baseEntropy = calcShannonEnt(dataSet)                          # 数据集原来的熵
@@ -77,7 +77,7 @@ def chooseBestFeatureToSplit(dataSet):
             newEntropy += prob * calcShannonEnt(subDataSet)        # 按照第i个特征的每一种取值划分后的熵之和，即为数据集按这种特征划分的熵
         infoGain = baseEntropy - newEntropy                        # 信息增益即为原数据集的熵和新数据集的熵之差
         if (infoGain > bestInfoGain):                              # 找出使得信息增益最大的特征(标号)
-            bestInfoGain = i
+            bestInfoGain = infoGain
             bestFeature = i
     return bestFeature
 
@@ -122,7 +122,7 @@ def createTree(dataSet, labels):
     myTree = {bestFeatLabel: {}}                                # 以最佳的特征划分树：形式是{ feat1:{ feat2:{ feat3:{ } }
 
     subLabels = labels[:]  # 创建标签的副本
-    del (subLabels[bestFeat])  # 在副本上删除已选择的特征
+    del(subLabels[bestFeat])  # 在副本上删除已选择的特征
 
     featValues = [example[bestFeat] for example in dataSet]
     uniqueVals = set(featValues)
@@ -132,8 +132,19 @@ def createTree(dataSet, labels):
 
 
 if __name__ == '__main__':
-    print('1')
-    dateSet, labels = createDataSet()
-    print(dateSet, labels)
-    fishclass = createTree(dateSet, labels)
-    print(fishclass)
+    file_path = './dataset1_weather.csv'
+    data = pd.read_csv(file_path)
+    dataSet = data.values.tolist()
+    '''
+    lenOfFeatVec = len(dataSet[0]) - 1
+    reducedDataSet = []
+    for featVec in dataSet:
+        reducedFeatVec = featVec[:lenOfFeatVec-1]
+        reducedDataSet.append(reducedFeatVec)
+    print(reducedDataSet)
+    '''
+    labels = ["Weather", "Temperature", "Humidity", "Wind", ]
+    print(dataSet)
+    myTree = createTree(dataSet, labels)
+    print(myTree)
+    # print(dataSet)
