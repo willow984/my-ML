@@ -1,5 +1,6 @@
 import numpy
 from numpy import *
+import matplotlib.pyplot as plt
 
 def loadDataSet(fileName):
     # 将以tab分割的数据文件转化成特征矩阵X和目标值向量Y
@@ -51,3 +52,18 @@ if __name__ == '__main__':
     for i in range(len(YArr)):
         cost += (calY[i] - YArr[i]) ** 2
     print(cost)
+
+    xMat = mat(XArr)
+    yMat = mat(YArr)
+    yHat = xMat * ws
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(xMat[:,1].flatten().A[0], yMat.T[:,0].flatten().A[0])
+
+    xCopy = xMat.copy()
+    xCopy.sort(0)
+    yHat = xCopy * ws
+    ax.plot(xCopy[:,1], yHat)
+
+    plt.show()
