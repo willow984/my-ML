@@ -89,6 +89,10 @@ def create_tree(dataSet, labels):
         myTree[bestFeatLabel][value] = create_tree(split_dataset(dataSet, bestFeat, value), subLabels[:])
     return myTree
 
+def classify(inputTree, featLabels, testVec):
+    pass
+    # ...
+
 
 if __name__ == '__main__':
     file_path = './dataset2_weather100.csv'
