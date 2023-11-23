@@ -18,11 +18,11 @@ def createDataSet(fileName):
 
 def classify(inX, dataSet, labels, k):
     dataSetSize = dataSet.shape[0]
-    diffMat = np.tile(inX, (dataSetSize, 1)) - dataSet   # 距离矩阵
+    diffMat = np.tile(inX, (dataSetSize, 1)) - dataSet   # 真实矩阵-测试矩阵(n*测试向量)=距离矩阵
     sqDiffMat = diffMat ** 2
     sqDistances = sqDiffMat.sum(axis=1)                  # axis=0是对列求和，axis=1是对行求和， 距离矩阵每行平方和组成的列表
     distances = sqDistances ** 0.5                       # 开方(欧氏距离)
-    sortedDistIndicies = distances.argsort()             # 返回数组元素从小到大排序后的索引数组(即K临近)
+    sortedDistIndicies = distances.argsort()             # 返回数组元素从小到大排序后的索引(原索引不变)(即K临近)
     classCount = {}
     for i in range(k):
         voteIlabel = labels[sortedDistIndicies[i]]
