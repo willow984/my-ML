@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 
 def loadDataSet(fileName):
     # 将以tab分割的数据文件转化成特征矩阵X和目标值向量Y
-    numFeat = len(open(fileName).readline().split(',')) - 1            # 默认数据文件每一行最后一个数据是目标值y
+    numFeat = len(open(fileName).readline().split('\t')) - 1            # 默认数据文件每一行最后一个数据是目标值y
     dataMat = []        # 数据(特征矩阵)
     labelMat = []       # y向量
     fr = open(fileName)
     for line in fr.readlines():
         lineList = []                           # 存储每一行数据的特征向量
-        curLine = line.strip().split(',')      # curLine是一个字符串列表
+        curLine = line.strip().split('\t')      # curLine是一个字符串列表
         for i in range(numFeat):
             lineList.append(float(curLine[i]))
         dataMat.append(lineList)                # 将每个特征向量加入特征矩阵
@@ -38,24 +38,12 @@ def calCost(ws, y):
 
 
 if __name__ == '__main__':
-    XArr, YArr = loadDataSet('dataset1_3features_100.csv')
-    # print("X:")
-    # for line in XArr:
-        # print(line)
-    # print("Y:")
-
+    XArr, YArr = loadDataSet('ex0.txt')
     ws = standRegress(XArr, YArr)
-    vecNum = len(XArr[0])
-    calY = numpy.dot(XArr, ws)
-    print(calY)
-    cost = 0.0
-    for i in range(len(YArr)):
-        cost += (calY[i] - YArr[i]) ** 2
-    print(cost)
-
     xMat = mat(XArr)
     yMat = mat(YArr)
     yHat = xMat * ws
+    print("yHat: ", yHat, "yMat:", yMat)
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
