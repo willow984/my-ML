@@ -1,5 +1,6 @@
 import numpy as np
-
+import matplotlib
+import matplotlib.pyplot as plt
 
 def loadDataSet(fileName):
     # 加载数据
@@ -60,11 +61,11 @@ def biKmeans(dataSet, k, distMeas=distEclud):
     m = np.shape(dataSet)[0]   # 获取行数(样本数)
     clusterAssment = np.mat(np.zeros((m,2)))  # m*2矩阵，记录每个样本所属簇以及在该簇中距离
     centroid0 = np.mean(dataSet, axis=0).tolist()[0]   # 找第一个中心点：计算数据样本中每一列的均值，返回所有点的均值作为初始中心点(np.mean返回二维数组)
-    centList = [centroid0]  # 记录簇中心点坐标(初始化1个，即centroid0)
-    for j in range(m):  # 对所有的样本
+    centList = [centroid0]     # 记录簇中心点坐标(初始化1个，即centroid0)
+    for j in range(m):         # 对所有的样本
         clusterAssment[j,1] = distMeas(np.mat(centroid0), dataSet[j,:])**2     # 更新clusterAssment中每一个样本点的欧氏距离
     while (len(centList) < k):  # 中心点数量少于k个时
-        lowestSSE = np.inf # 初始化最低的总平方误差为无穷大
+        lowestSSE = np.inf      # 初始化最低的总平方误差为无穷大
         for i in range(len(centList)):  # 遍历所有的簇中心点,对当前每一个簇要在做一次二分kmeans
             ptsInCurrCluster = dataSet[np.nonzero(clusterAssment[:,0].A==i)[0],:]  # 取该簇中所有样本点
             centroidMat, splitClustAss = kMeans(ptsInCurrCluster, 2, distMeas)  # 在这个簇中使用kMeans算法再二分聚类，返回再聚类后的[样本点所属簇,距离]，[簇，质心坐标]
@@ -76,16 +77,46 @@ def biKmeans(dataSet, k, distMeas=distEclud):
                 bestNewCents = centroidMat              # 二分后两个新的质心
                 bestClustAss = splitClustAss.copy()     # 复制当前分割的聚类分配情况[]
                 lowestSSE = sseSplit + sseNotSplit      # 更新最低总平方误差
-        bestClustAss[np.nonzero(bestClustAss[:,0].A == 1)[0],0] = len(centList) # 将分割出来的其中一个新簇的分配编号更新为质心列表的长度
+        bestClustAss[np.nonzero(bestClustAss[:,0].A == 1)[0],0] = len(centList)    # 将分割出来的其中一个新簇的分配编号更新为质心列表的长度
         bestClustAss[np.nonzero(bestClustAss[:,0].A == 0)[0],0] = bestCentToSplit  # 将另一个新簇的分配编号设为原先要被分割的质心的编号
         print('the bestCentToSplit is: ',bestCentToSplit)
         print('the len of bestClustAss is: ', len(bestClustAss))
         centList[bestCentToSplit] = bestNewCents[0,:].tolist()[0]   # 更新簇中心列表，用一个新的簇中心替换原来的簇中心
-        centList.append(bestNewCents[1,:].tolist()[0])  # 将另一个新的簇中心加入到簇中心列表中
+        centList.append(bestNewCents[1,:].tolist()[0])              # 将另一个新的簇中心加入到簇中心列表中
         clusterAssment[np.nonzero(clusterAssment[:,0].A == bestCentToSplit)[0],:]= bestClustAss    # 更新 clusterAssment 矩阵，反映新的簇分配情况
     return np.mat(centList), clusterAssment    # 返回最终的簇中心列表和样本点的簇分配情况
 
+def distSLC(vecA, vecB):
+    a = np.sin(vecA[0,1]*np.pi/180) * np.sin(vecB[0,1]*np.pi/180)
+    b = np.cos(vecA[0,1]*np.pi/180) * np.cos(vecB[0,1]*np.pi/180) * \
+                      np.cos(np.pi * (vecB[0,0]-vecA[0,0]) /180)
+    return np.arccos(a + b)*6371.0
+
+def clusterClubs(numClust=5):
+    datList = []
+    for line in open('places.txt').readlines():
+        lineArr = line.split('\t')
+        datList.append([float(lineArr[4]), float(lineArr[3])])
+    datMat = np.mat(datList)
+    myCentroids, clustAssing = biKmeans(datMat, numClust, distMeas=distSLC)
+    fig = plt.figure()
+    rect=[0.1,0.1,0.8,0.8]
+    scatterMarkers=['s', 'o', '^', '8', 'p', \
+                    'd', 'v', 'h', '>', '<']
+    axprops = dict(xticks=[], yticks=[])
+    ax0=fig.add_axes(rect, label='ax0', **axprops)
+    imgP = plt.imread('Portland.png')
+    ax0.imshow(imgP)
+    ax1=fig.add_axes(rect, label='ax1', frameon=False)
+    for i in range(numClust):
+        ptsInCurrCluster = datMat[np.nonzero(clustAssing[:,0].A==i)[0],:]
+        markerStyle = scatterMarkers[i % len(scatterMarkers)]
+        ax1.scatter(ptsInCurrCluster[:,0].flatten().A[0], ptsInCurrCluster[:,1].flatten().A[0], marker=markerStyle, s=90)
+    ax1.scatter(myCentroids[:,0].flatten().A[0], myCentroids[:,1].flatten().A[0], marker='+', s=300)
+    plt.show()
+
 
 if __name__ == '__main__':
-    dataMat = np.mat(loadDataSet('testSet.txt'))
-    myCentroids, clustAssing = kMeans(dataMat, 4)
+    clusterClubs(3)
+
+
